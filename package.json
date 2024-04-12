@@ -1,0 +1,23 @@
+{
+    "name": "com.chichi.render-pipelines.too-young",
+    "description": "",
+    "version": "0.0.1",
+    "unity": "6000.0",
+    "displayName": "Too Young RP",
+    "dependencies": {
+      "com.unity.mathematics": "1.2.4",
+      "com.unity.burst": "1.8.9",
+      "com.unity.render-pipelines.core": "17.0.2"
+    },
+    "keywords": [
+      "graphics",
+      "performance",
+      "rendering",
+      "render",
+      "pipeline"
+    ],
+    "samples": [
+    
+    ]
+  }
+  
