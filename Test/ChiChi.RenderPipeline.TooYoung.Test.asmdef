@@ -1,0 +1,17 @@
+{
+    "name": "ChiChi.RenderPipeline.TooYoung.Test",
+    "rootNamespace": "",
+    "references": [
+        "GUID:8d1dcbb83420b224190d1e199415c540",
+        "GUID:f23f4f809cb5e564a9053f4a464f08e8"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
