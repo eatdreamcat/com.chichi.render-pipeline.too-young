@@ -2,7 +2,7 @@
     "name": "com.chichi.render-pipelines.too-young",
     "description": "为了自由而战",
     "author": "吃梦的猫",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "unity": "2023.3",
     "displayName": "Too Young RP",
     "dependencies": {
