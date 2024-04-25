@@ -1,13 +1,11 @@
 using System;
-using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace UnityEngine.Rendering.TooYoung
 {
     [Serializable]
     [SupportedOnRenderPipeline(typeof(TYRenderPipelineAsset))]
-    [Categorization.CategoryInfo(Name = "R: Runtime Assets", Order = 1000), HideInInspector]
-    class TYRenderPipelineRuntimeAssets : IRenderPipelineResources
+    [Categorization.CategoryInfo(Name = "R: Runtime Materials", Order = 1000), HideInInspector]
+    class TYRenderPipelineRuntimeMaterials : IRenderPipelineResources
     {
         public int version => 0;
 

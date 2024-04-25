@@ -21,5 +21,17 @@ namespace UnityEngine.Rendering.TooYoung
         public ProbeVolumeSceneData probeVolumeSceneData { get; }
         public GPUResidentDrawerSettings gpuResidentDrawerSettings { get; }
         public GPUResidentDrawerMode gpuResidentDrawerMode { get; set; }
+        
+        /// <summary>
+        /// Ensures Global Settings are ready and registered into GraphicsSettings
+        /// </summary>
+        protected override void EnsureGlobalSettings()
+        {
+            base.EnsureGlobalSettings();
+
+#if UNITY_EDITOR
+            TYRenderPipelineGlobalSettings.Ensure();
+#endif
+        }
     }
 }

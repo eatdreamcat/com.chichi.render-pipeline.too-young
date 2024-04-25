@@ -1,6 +1,6 @@
 {
     "name": "com.chichi.render-pipelines.too-young",
-    "description": "为了自由而战",
+    "description": "RayTracingPass + FinalBlit: 目前暂时没有渲染任何东西，先跑通流程",
     "author": "吃梦的猫",
     "version": "0.0.1",
     "unity": "2023.3",
