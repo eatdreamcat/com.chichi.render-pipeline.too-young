@@ -1,6 +1,6 @@
 #ifndef TOO_YOUNG_RAY_INCLUDED
 #define TOO_YOUNG_RAY_INCLUDED
-#include "Packages/com.chichi.render-pipeline.too-young/ShaderLibrary/RayTracing/RayTracingConfig.cs.hlsl"
+#include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/RayTracing/RayTracingConfig.cs.hlsl"
 
 struct Ray
 {

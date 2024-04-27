@@ -1,6 +1,6 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
-#include "Packages/com.chichi.render-pipeline.too-young/ShaderLibrary/GlobalShaderVariables.cs.hlsl"
-#include "Packages/com.chichi.render-pipeline.too-young/ShaderLibrary/RayTracing/Ray.hlsl"
+#include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/GlobalShaderVariables.cs.hlsl"
+#include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/RayTracing/Ray.hlsl"
 
 
 #pragma kernel ImplicitRendering

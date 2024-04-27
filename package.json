@@ -1,5 +1,5 @@
 {
-    "name": "com.chichi.render-pipeline.too-young",
+    "name": "com.chichi.render-pipelines.too-young",
     "description": "RayTracingPass + FinalBlit: 目前暂时没有渲染任何东西，先跑通流程",
     "author": "吃梦的猫",
     "version": "0.0.1",
