@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Serialization;
 
 namespace UnityEngine.Rendering.TooYoung
 {
@@ -11,16 +12,17 @@ namespace UnityEngine.Rendering.TooYoung
 
         bool IRenderPipelineGraphicsSettings.isAvailableInPlayerBuild => true;
 
-        #region RayTracing Series
+        #region Implicit Rendering
 
-        [Header("RayTracingInOneWeekend")]
-        [SerializeField, ResourcePath("Shaders/RayTracingSeries/RayTracingInOneWeekend.compute")]
-        private ComputeShader m_RayTracingInOneWeekendCS;
+        [FormerlySerializedAs("m_RayTracingInOneWeekendCS")]
+        [Header("Implicit Rendering")]
+        [SerializeField, ResourcePath("Shaders/ImplicitRendering/ImplicitRendering.compute")]
+        private ComputeShader m_ImplicitRenderingCS;
 
-        public ComputeShader rayTracingInOneWeekendCS
+        public ComputeShader implicitRendeirngCS
         {
-            get => m_RayTracingInOneWeekendCS;
-            set => this.SetValueAndNotify(ref m_RayTracingInOneWeekendCS, value);
+            get => m_ImplicitRenderingCS;
+            set => this.SetValueAndNotify(ref m_ImplicitRenderingCS, value);
         }
 
         #endregion

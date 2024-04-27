@@ -4,7 +4,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace UnityEngine.Rendering.TooYoung
 {
-    internal class RayTraingInOneWeekendPassData
+    internal class ImplicitRenderingPassData
     {
         internal ComputeShader cs;
         internal int kernelIndex;
@@ -13,9 +13,9 @@ namespace UnityEngine.Rendering.TooYoung
     
     public partial class TYRenderPipeline
     {
-        const string k_RayTracingInOneWeekend = "RayTracingInOneWeekend";
+        const string k_ImplicitRendering = "ImplicitRendering";
         private const string k_TargetRTName = "_Result";
-        TextureHandle RenderTracingInOneWeekendPass(Camera camera)
+        TextureHandle ImplicitRenderingPass(Camera camera)
         {
             var desc = new TextureDesc()
             {
@@ -25,27 +25,37 @@ namespace UnityEngine.Rendering.TooYoung
                 slices = 1,
                 sizeMode = TextureSizeMode.Scale,
                 msaaSamples = MSAASamples.None,
-                name = k_RayTracingInOneWeekend,
+                name = k_ImplicitRendering,
                 enableRandomWrite = true
             };
             
             var target = m_RenderGraph.CreateTexture(desc);
             
-            using (var builder = m_RenderGraph.AddComputePass<RayTraingInOneWeekendPassData>(
-                       k_RayTracingInOneWeekend, out var passData, 
-                       ProfilingSampler.Get(TYProfilerId.RayTracingInOneWeekend)))
+            using (var builder = m_RenderGraph.AddComputePass<ImplicitRenderingPassData>(
+                       k_ImplicitRendering, out var passData, 
+                       ProfilingSampler.Get(TYProfilerId.ImplicitRendering)))
             {
                 builder.UseTexture(target, AccessFlags.ReadWrite);
-                passData.cs = runtimeShaders.rayTracingInOneWeekendCS;
-                passData.kernelIndex = passData.cs.FindKernel(k_RayTracingInOneWeekend);
+                passData.cs = runtimeShaders.implicitRendeirngCS;
+                passData.kernelIndex = passData.cs.FindKernel(k_ImplicitRendering);
                 passData.dispatchSize = new Vector3Int(
                     camera.scaledPixelWidth,
                     camera.scaledPixelHeight,
                     1
                 );
                 
-                builder.SetRenderFunc((RayTraingInOneWeekendPassData data, ComputeGraphContext ctx) =>
+                builder.SetRenderFunc((ImplicitRenderingPassData data, ComputeGraphContext ctx) =>
                 {
+                    var pixelToWorldMatrix = TYUtils.ComputePixelCoordToWorldSpaceViewDirectionMatrix(
+                        camera,
+                        new Vector4(
+                            camera.scaledPixelWidth, 
+                            camera.scaledPixelHeight,
+                            1.0f / camera.scaledPixelWidth, 
+                            1.0f / camera.scaledPixelHeight
+                            )
+                        );
+                    ctx.cmd.SetComputeMatrixParam(data.cs, Shader.PropertyToID("_PixelCoordToWorldMatrix"), pixelToWorldMatrix);
                     ctx.cmd.SetComputeTextureParam(data.cs, data.kernelIndex, k_TargetRTName, target);
                     ctx.cmd.DispatchCompute(data.cs, data.kernelIndex, 
                         data.dispatchSize.x, 

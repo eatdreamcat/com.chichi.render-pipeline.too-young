@@ -38,7 +38,7 @@ namespace UnityEngine.Rendering.TooYoung
                 var backBuffer = m_RenderGraph.ImportBackbuffer(TYUtils.GetCameraTargetId(camera));
                 
                 // RaytracingSeries
-                var rayTracingResult = RenderTracingInOneWeekendPass(camera);
+                var rayTracingResult = ImplicitRenderingPass(camera);
                 BlitToFinalCameraTexture2D(camera, rayTracingResult, backBuffer);
             }
         }

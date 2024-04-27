@@ -13,6 +13,7 @@ namespace UnityEngine.Rendering.TooYoung
         private int m_FrameCount;
         private RenderGraph m_RenderGraph = new ("TooYoung RP");
 
+        private GlobalShaderVariables m_GlobalShaderVariables;
 
         #region Global Settings
         private TYRenderPipelineGlobalSettings m_GlobalSettings;
@@ -65,7 +66,10 @@ namespace UnityEngine.Rendering.TooYoung
 
         #region Private
 
-        
+        void SetGlobalConstantBuffer(CommandBuffer cmd)
+        {
+            ConstantBuffer.PushGlobal(cmd, m_GlobalShaderVariables, ShaderIDs._GlobalShaderVariables);
+        }
 
         #endregion
         
@@ -135,6 +139,11 @@ namespace UnityEngine.Rendering.TooYoung
                         // The only point of calling this here is to grow the render targets.
                         // The call in BeginRender will setup the current RTHandle viewport size.
                         RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
+                        // TODO: init in method
+                        m_GlobalShaderVariables._CameraWorldPosition = camera.transform.position;
+                       
+                        SetGlobalConstantBuffer(cmd);
+                        
                         ExecuteWithRenderGraph(renderContext, cmd, camera);
                         
                     }

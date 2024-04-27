@@ -5,7 +5,7 @@ namespace UnityEngine.Rendering.TooYoung
     internal enum TYProfilerId
     {
         RecordRenderGraph,
-        RayTracingInOneWeekend,
+        ImplicitRendering,
         BlitToFinalCameraTexture
     }
 }
