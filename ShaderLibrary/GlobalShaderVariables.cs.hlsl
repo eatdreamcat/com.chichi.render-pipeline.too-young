@@ -7,7 +7,8 @@
 // Generated from UnityEngine.Rendering.TooYoung.GlobalShaderVariables
 // PackingRules = Exact
 GLOBAL_CBUFFER_START(GlobalShaderVariables, b0)
-    float3 _CameraWorldPosition;
+    float4 _CameraWorldPosition;
+    float4 _ImplicitSphereList[256];
 CBUFFER_END
 
 

@@ -3,7 +3,7 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.Rendering.TooYoung
 {
-    public class TYRenderPipelineAsset : RenderPipelineAsset<TYRenderPipeline>,
+    public partial class TYRenderPipelineAsset : RenderPipelineAsset<TYRenderPipeline>,
         IVirtualTexturingEnabledRenderPipeline, IProbeVolumeEnabledRenderPipeline, IGPUResidentRenderPipeline
     {
         protected override RenderPipeline CreatePipeline()
@@ -21,7 +21,9 @@ namespace UnityEngine.Rendering.TooYoung
         public ProbeVolumeSceneData probeVolumeSceneData { get; }
         public GPUResidentDrawerSettings gpuResidentDrawerSettings { get; }
         public GPUResidentDrawerMode gpuResidentDrawerMode { get; set; }
-        
+
+        public RayTracingOptions rayTracingOptions { get; set; }
+
         /// <summary>
         /// Ensures Global Settings are ready and registered into GraphicsSettings
         /// </summary>

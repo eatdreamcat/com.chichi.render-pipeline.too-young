@@ -48,6 +48,8 @@ namespace UnityEngine.Rendering.TooYoung
             RTHandles.Initialize(Screen.width, Screen.height);
             
             Blitter.Initialize(runtimeShaders.blitPS, runtimeShaders.blitColorAndDepthPS);
+            
+            InitImplicitRenderingBuffers();
         }
 
         void CleanupRenderGraph()
@@ -58,16 +60,24 @@ namespace UnityEngine.Rendering.TooYoung
         
         protected override void Dispose(bool disposing)
         {
-            
+            ReleaseImplicitRenderingBuffers();
             Blitter.Cleanup();
             CleanupRenderGraph();
+            ConstantBuffer.ReleaseAll();
             base.Dispose(disposing);
         }
 
         #region Private
 
-        void SetGlobalConstantBuffer(CommandBuffer cmd)
+        void InitCameraGlobalConstantBuffer(ref GlobalShaderVariables cb, Camera camera)
         {
+            cb._CameraWorldPosition = camera.transform.position;
+        }
+        
+        void SetGlobalConstantBuffer(CommandBuffer cmd, Camera camera)
+        {
+            InitCameraGlobalConstantBuffer(ref m_GlobalShaderVariables, camera);
+            InitImplicitRenderersGlobalConstantBuffer(ref m_GlobalShaderVariables);
             ConstantBuffer.PushGlobal(cmd, m_GlobalShaderVariables, ShaderIDs._GlobalShaderVariables);
         }
 
@@ -139,11 +149,7 @@ namespace UnityEngine.Rendering.TooYoung
                         // The only point of calling this here is to grow the render targets.
                         // The call in BeginRender will setup the current RTHandle viewport size.
                         RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
-                        // TODO: init in method
-                        m_GlobalShaderVariables._CameraWorldPosition = camera.transform.position;
-                       
-                        SetGlobalConstantBuffer(cmd);
-                        
+                        SetGlobalConstantBuffer(cmd, camera);
                         ExecuteWithRenderGraph(renderContext, cmd, camera);
                         
                     }

@@ -12,22 +12,28 @@
 #define IMPLICITPRIMITIVE_CUBE (2)
 #define IMPLICITPRIMITIVE_PLANE (3)
 
-// Generated from UnityEngine.Rendering.TooYoung.ImplicitRenderer
+//
+// UnityEngine.Rendering.TooYoung.ConstDefine:  static fields
+//
+#define MAX_IMPLICIT_RENDERER_COUNT (256)
+#define IMPLICIT_SPHERE_STRIDE (4)
+
+// Generated from UnityEngine.Rendering.TooYoung.ImplicitRendererInfo
 // PackingRules = Exact
-struct ImplicitRenderer
+struct ImplicitRendererInfo
 {
     int primitive;
-    uint instanceId;
+    int instanceId;
 };
 
 //
-// Accessors for UnityEngine.Rendering.TooYoung.ImplicitRenderer
+// Accessors for UnityEngine.Rendering.TooYoung.ImplicitRendererInfo
 //
-int GetPrimitive(ImplicitRenderer value)
+int GetPrimitive(ImplicitRendererInfo value)
 {
     return value.primitive;
 }
-uint GetInstanceId(ImplicitRenderer value)
+int GetInstanceId(ImplicitRendererInfo value)
 {
     return value.instanceId;
 }
