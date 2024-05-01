@@ -23,26 +23,28 @@ namespace UnityEngine.Rendering.TooYoung
             }
             else
             {
-                var inverseView = camera.cameraToWorldMatrix;
+                // TODO: 
+                var viewToWorldMatrix = camera.cameraToWorldMatrix;
+                
                 var halfFov = camera.fieldOfView * Mathf.Deg2Rad / 2.0f;
                 var vertical = 2.0f * Mathf.Tan(halfFov) * camera.nearClipPlane;
                 var horizontal = vertical * camera.aspect;
                 
                 var scaleAndOffsetMatrix = Matrix4x4.Scale(new Vector3(
-                    horizontal * renderTargetResolution.z,
-                    vertical * renderTargetResolution.w,
-                    -camera.nearClipPlane
+                    horizontal * renderTargetResolution.z,  // [0, horizontal]
+                    vertical * renderTargetResolution.w,    // [0, vertical]
+                    -camera.nearClipPlane                   // view space is right-hand
                     ));
 
-                scaleAndOffsetMatrix.m03 = -horizontal / 2.0f;
-                scaleAndOffsetMatrix.m13 = -vertical / 2.0f;
+                scaleAndOffsetMatrix.m03 = -horizontal / 2.0f;  // [-horizontal / 2, horizontal / 2]
+                scaleAndOffsetMatrix.m13 = -vertical / 2.0f;    // [-vertical / 2, vertical / 2]
                 if (SystemInfo.graphicsUVStartsAtTop)
                 {
-                    scaleAndOffsetMatrix.m11 *= -1;
-                    scaleAndOffsetMatrix.m13 = vertical / 2.0f;
+                    scaleAndOffsetMatrix.m11 *= -1;    // [-vertical, 0]
+                    scaleAndOffsetMatrix.m13 = vertical / 2.0f;  // [-vertical / 2, vertical / 2]
                 }
-                
-                result = inverseView * scaleAndOffsetMatrix;
+
+                result = viewToWorldMatrix.transpose * scaleAndOffsetMatrix;
             }
             
             return result;

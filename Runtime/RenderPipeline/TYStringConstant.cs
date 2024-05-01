@@ -11,7 +11,7 @@ namespace UnityEngine.Rendering.TooYoung
         
         #region ImplicitRendering
 
-        public static readonly int _PixelCoordToWorldMatrix = Shader.PropertyToID("_PixelCoordToWorldMatrix");
+        public static readonly int _PixelCoordToViewDirWS = Shader.PropertyToID("_PixelCoordToViewDirWS");
         public static readonly int _ClearColor = Shader.PropertyToID("_ClearColor");
         public static readonly int _ImplicitRendererList = Shader.PropertyToID("_ImplicitRendererList");
         public static readonly int _ImplicitRenderersCount = Shader.PropertyToID("_ImplicitRenderersCount");

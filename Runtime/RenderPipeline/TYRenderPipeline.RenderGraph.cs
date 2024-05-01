@@ -14,6 +14,16 @@ namespace UnityEngine.Rendering.TooYoung
         
         #region Private
 
+        void SetupCameraProperties(Camera camera, ScriptableRenderContext renderContext,CommandBuffer commandBuffer)
+        {
+            // The next 2 functions are required to flush the command buffer before calling functions directly on the render context.
+            // This way, the commands will execute in the order specified by the C# code.
+            renderContext.ExecuteCommandBuffer(commandBuffer);
+            commandBuffer.Clear();
+
+            renderContext.SetupCameraProperties(camera, false);
+        }
+        
         private void ExecuteWithRenderGraph(ScriptableRenderContext renderContext,CommandBuffer commandBuffer, Camera camera)
         {
             var parameters = new RenderGraphParameters
@@ -24,8 +34,9 @@ namespace UnityEngine.Rendering.TooYoung
                 scriptableRenderContext = renderContext,
                 commandBuffer = commandBuffer
             };
-
+            commandBuffer.DisableScissorRect();
             m_RenderGraph.BeginRecording(parameters);
+            SetupCameraProperties(camera, renderContext, commandBuffer);
             RecordRenderGraph(renderContext, commandBuffer, camera);
             m_RenderGraph.EndRecordingAndExecute();
         }
@@ -35,16 +46,17 @@ namespace UnityEngine.Rendering.TooYoung
         {
             using (new ProfilingScope(commandBuffer, ProfilingSampler.Get(TYProfilerId.RecordRenderGraph)))
             {
-                var backBuffer = m_RenderGraph.ImportBackbuffer(TYUtils.GetCameraTargetId(camera));
-                
-                // RaytracingSeries
-                var rayTracingResult = ImplicitRenderingPass(camera);
-                BlitToFinalCameraTexture2D(camera, rayTracingResult, backBuffer);
+                var backBuffer = RenderImplicitObjectToCameraTarget(camera);
+                // Render gizmos that should be affected by post processes
+                RenderGizmos(m_RenderGraph, camera, GizmoSubset.PreImageEffects);
+                // TODO : post processing
+                RenderWireOverlay(m_RenderGraph, camera, backBuffer);
+                RenderGizmos(m_RenderGraph, camera, GizmoSubset.PostImageEffects);
             }
         }
 
         
-        void BlitToFinalCameraTexture2D(Camera camera, TextureHandle source,
+        TextureHandle BlitToFinalCameraTexture2D(Camera camera, TextureHandle source,
             TextureHandle destination)
         {
             using (var builder = m_RenderGraph.AddRenderPass<FinalBlitPassData>(
@@ -57,8 +69,85 @@ namespace UnityEngine.Rendering.TooYoung
                     Blitter.BlitCameraTexture2D(ctx.cmd, data.source, data.destination);
                 });
             }
+
+            return destination;
         }
 
+        void RenderScreenSpaceOverlayUI(RenderGraph renderGraph, Camera camera, TextureHandle colorBuffer)
+        {
+            // TODO
+        }
+        
+        
+        #endregion
+
+        #region Gizmos
+
+#if UNITY_EDITOR
+        class RenderWireOverlayPassData
+        {
+            public Camera camera;
+        }
+#endif
+        
+        void RenderWireOverlay(RenderGraph renderGraph, Camera camera, TextureHandle colorBuffer)
+        {
+#if UNITY_EDITOR
+            if (camera.cameraType == CameraType.SceneView)
+            {
+                using (var builder = renderGraph.AddRenderPass<RenderWireOverlayPassData>("Wire Overlay",
+                           out var passData))
+                {
+                    builder.WriteTexture(colorBuffer);
+                    passData.camera = camera;
+
+                    builder.SetRenderFunc(
+                        (RenderWireOverlayPassData data, RenderGraphContext ctx) =>
+                        {
+                            ctx.renderContext.ExecuteCommandBuffer(ctx.cmd);
+                            ctx.cmd.Clear();
+                            ctx.renderContext.DrawWireOverlay(camera);
+                        });
+                }
+            }
+#endif
+        }
+        
+#if UNITY_EDITOR
+        class RenderGizmosPassData
+        {
+            public GizmoSubset  gizmoSubset;
+            public Camera       camera;
+            public Texture      exposureTexture;
+        }
+#endif
+        
+        void RenderGizmos(RenderGraph renderGraph, Camera camera, GizmoSubset gizmoSubset)
+        {
+#if UNITY_EDITOR
+            if (UnityEditor.Handles.ShouldRenderGizmos() &&
+                (camera.cameraType == CameraType.Game || camera.cameraType == CameraType.SceneView))
+            {
+                bool renderPrePostprocessGizmos = (gizmoSubset == GizmoSubset.PreImageEffects);
+                using (var builder = renderGraph.AddRenderPass<RenderGizmosPassData>
+                           (renderPrePostprocessGizmos ? "PrePostprocessGizmos" : "Gizmos", out var passData))
+                {
+                    passData.gizmoSubset = gizmoSubset;
+                    passData.camera = camera;
+
+                    builder.SetRenderFunc(
+                        (RenderGizmosPassData data, RenderGraphContext ctx) =>
+                        {
+                            // TODO: Gizmos exposure
+                            ctx.renderContext.ExecuteCommandBuffer(ctx.cmd);
+                            ctx.cmd.Clear();
+                            ctx.renderContext.DrawGizmos(data.camera, data.gizmoSubset);
+                        });
+                }
+            }
+#endif
+        }
+        
         #endregion
     }
 }

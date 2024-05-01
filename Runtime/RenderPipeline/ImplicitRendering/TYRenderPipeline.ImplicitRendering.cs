@@ -132,7 +132,7 @@ namespace UnityEngine.Rendering.TooYoung
                                 1.0f / camera.scaledPixelHeight
                             )
                         );
-                        ctx.cmd.SetComputeMatrixParam(data.cs, ShaderIDs._PixelCoordToWorldMatrix, pixelToWorldMatrix);
+                        ctx.cmd.SetComputeMatrixParam(data.cs, ShaderIDs._PixelCoordToViewDirWS, pixelToWorldMatrix);
                         ctx.cmd.SetComputeTextureParam(data.cs, data.renderKernelIndex, k_TargetRTName, target);
                         ctx.cmd.SetComputeBufferParam(data.cs, data.renderKernelIndex, 
                             ShaderIDs._ImplicitRendererList, m_ImplicitRenderersBuffer);
@@ -147,6 +147,15 @@ namespace UnityEngine.Rendering.TooYoung
             }
             
             return target;
+        }
+
+        TextureHandle RenderImplicitObjectToCameraTarget(Camera camera)
+        {
+            var backBuffer = m_RenderGraph.ImportBackbuffer(TYUtils.GetCameraTargetId(camera));
+                
+            // RaytracingSeries
+            var rayTracingResult = ImplicitRenderingPass(camera);
+            return BlitToFinalCameraTexture2D(camera, rayTracingResult, backBuffer);
         }
     }
 

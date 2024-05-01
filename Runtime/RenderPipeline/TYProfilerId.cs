@@ -8,6 +8,8 @@ namespace UnityEngine.Rendering.TooYoung
         ImplicitShading,
         ImplicitClear,
         ImplicitRendering,
-        BlitToFinalCameraTexture
+        BlitToFinalCameraTexture,
+        RenderWireFrame,
+        CullResultsCull
     }
 }

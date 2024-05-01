@@ -29,6 +29,7 @@ namespace UnityEngine.Rendering.TooYoung
 
         #endregion
         
+        
         public TYRenderPipeline(TYRenderPipelineAsset asset)
         {
             
@@ -50,6 +51,8 @@ namespace UnityEngine.Rendering.TooYoung
             Blitter.Initialize(runtimeShaders.blitPS, runtimeShaders.blitColorAndDepthPS);
             
             InitImplicitRenderingBuffers();
+            
+            SupportedRenderingFeatures.active.rendersUIOverlay = true;
         }
 
         void CleanupRenderGraph()
@@ -69,9 +72,22 @@ namespace UnityEngine.Rendering.TooYoung
 
         #region Private
 
+        bool PrepareAndCullCamera(Camera camera, ScriptableRenderContext renderContext, out CullingResults cullingResults)
+        {
+            cullingResults = new CullingResults();
+            
+            if (!camera.TryGetCullingParameters(camera.stereoEnabled, out var cullingParams))
+            {
+                return false;
+            }
+            
+            return TryCull(camera, renderContext, cullingParams, ref cullingResults);
+            
+        }
+
         void InitCameraGlobalConstantBuffer(ref GlobalShaderVariables cb, Camera camera)
         {
-            cb._CameraWorldPosition = camera.transform.position;
+            cb._CameraWorldPosition = camera.cameraToWorldMatrix.GetColumn(3);
         }
         
         void SetGlobalConstantBuffer(CommandBuffer cmd, Camera camera)
@@ -148,10 +164,17 @@ namespace UnityEngine.Rendering.TooYoung
                         // we have the full size render target for debug rendering
                         // The only point of calling this here is to grow the render targets.
                         // The call in BeginRender will setup the current RTHandle viewport size.
+
+                        if (!PrepareAndCullCamera(camera, renderContext, out var cullingResults))
+                        {
+
+                            continue;
+                        }
+
                         RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
                         SetGlobalConstantBuffer(cmd, camera);
                         ExecuteWithRenderGraph(renderContext, cmd, camera);
-                        
+
                     }
                 }
                 catch (Exception e)
@@ -159,10 +182,14 @@ namespace UnityEngine.Rendering.TooYoung
                     Debug.LogError("Error while building Render Graph.");
                     Debug.LogException(e);
                 }
+                finally
+                {
+                    renderContext.ExecuteCommandBuffer(cmd);
+                    CommandBufferPool.Release(cmd);
+                    renderContext.Submit();
+                }
                 
-                renderContext.ExecuteCommandBuffer(cmd);
-                CommandBufferPool.Release(cmd);
-                renderContext.Submit();
+                
             }
             
             
@@ -172,5 +199,54 @@ namespace UnityEngine.Rendering.TooYoung
         }
         
         #endregion 
+        
+        
+        static bool TryCull(
+            Camera camera,
+            ScriptableRenderContext renderContext,
+            ScriptableCullingParameters cullingParams,
+            ref CullingResults cullingResults
+        )
+        {
+            if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview)
+            {
+#if UNITY_2020_2_OR_NEWER
+                ScriptableRenderContext.EmitGeometryForCamera(camera);
+#endif
+            }
+#if UNITY_EDITOR
+            // emit scene view UI
+            else if (camera.cameraType == CameraType.SceneView)
+            {
+                ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+            }
+#endif
+            
+            // Set the LOD bias and store current value to be able to restore it.
+            // Use a try/finalize pattern to be sure to restore properly the qualitySettings.lodBias
+            var initialLODBias = QualitySettings.lodBias;
+            var initialMaximumLODLevel = QualitySettings.maximumLODLevel;
+            try
+            {
+                // This needs to be called before culling, otherwise in the case where users generate intermediate renderers, it can provoke crashes.
+                BeginCameraRendering(renderContext, camera);
+                
+                using (new ProfilingScope(ProfilingSampler.Get(TYProfilerId.CullResultsCull)))
+                {
+                    cullingResults = renderContext.Cull(ref cullingParams);
+                }
+                
+                return true;
+            }
+            finally
+            {
+#if UNITY_2021_1_OR_NEWER
+                QualitySettings.SetLODSettings(initialLODBias, initialMaximumLODLevel, false);
+#else
+                QualitySettings.lodBias = initialLODBias;
+                QualitySettings.maximumLODLevel = initialMaximumLODLevel;
+#endif
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@
 
 RWTexture2D<float4> _Result;
 float4 _ClearColor;
-float4x4 _PixelCoordToWorldMatrix;
+float4x4 _PixelCoordToViewDirWS;
 float _ImplicitRenderersCount;
 
 float3 RayCast(Ray ray)
@@ -23,11 +23,11 @@ float3 RayCast(Ray ray)
             HitResult result;
             if(IntersectSphere(ray, _ImplicitSphereList[renderInfo.instanceId], result))
             {
-                return float3(_ImplicitSphereList[renderInfo.instanceId].www);
+                return result.normalOutside * 0.5 + 0.5;
             }
         }
     }
-
+    return float3(0, 0, 0);
     float a = 0.5 * (ray.directionWS.y + 1.0);
     return float3((1.0 - a) * float3(1.0, 1.0, 1.0) + a * pow(float3(0.5, 0.7, 1.0), 2.2));
 }
@@ -41,7 +41,7 @@ void ImplicitRendering (uint3 dispatchThreadId : SV_DispatchThreadID)
     
     Ray ray = (Ray)0;
     ray.originWS = _CameraWorldPosition.xyz;
-    ray.directionWS = SafeNormalize(mul(_PixelCoordToWorldMatrix, float4(pixelCenterCoord, 1, 1)).xyz);
+    ray.directionWS = SafeNormalize(mul(_PixelCoordToViewDirWS, float4(pixelCenterCoord, 1, 1)).xyz);
     
     _Result[pixelCoord] = float4(RayCast(ray), 1.0);
 }
