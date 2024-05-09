@@ -10,6 +10,13 @@ namespace UnityEngine.Rendering.TooYoung
     }
 
     [GenerateHLSL]
+    public enum FaceType
+    {
+        Front,
+        Back
+    }
+
+    [GenerateHLSL]
     public unsafe struct ImplicitRendererInfo
     {
         public int primitive;

@@ -1,13 +1,15 @@
 #ifndef TOO_YOUNG_INTERSECTIONS_INCLUDED
 #define TOO_YOUNG_INTERSECTIONS_INCLUDED
+
+#include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/ImplicitRendering/ImplicitRenderer.cs.hlsl"
 #include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/RayTracing/Ray.hlsl"
 
 struct HitResult
 {
-    float t0;
-    float t1;
-    float3 normalOutside;
-    float3 normalInside;
+    float t;
+    float3 normal;
+    float3 position;
+    float face;
 };
 
 bool IntersectSphere(Ray ray, float4 sphere, out HitResult result)
@@ -16,23 +18,36 @@ bool IntersectSphere(Ray ray, float4 sphere, out HitResult result)
 
     float3 oc = sphere.xyz - ray.originWS;
     float a = dot(ray.directionWS, ray.directionWS);
-    float b = -2.0 * dot(ray.directionWS, oc);
+    float h = dot(ray.directionWS, oc);
     float c = dot(oc, oc) - sphere.w * sphere.w;
-    float discriminant = b * b - 4 * a * c;
+    float discriminant = h * h - a * c;
 
     if (discriminant < 0)
     {
         return false;
     }
-
-    result.t0 = (-b - sqrt(discriminant)) / (2.0 * a);
-    result.t1 = (-b + sqrt(discriminant)) / (2.0 * a);
-
-    // TODO: fix this bug 
-    if (result.t0 < 0 && result.t1 < 0) return false;
     
-    result.normalOutside = normalize(EvaluateRayPosition(ray, result.t0) - sphere.xyz);
-    result.normalInside = normalize(sphere.xyz - EvaluateRayPosition(ray, result.t1));
+    result.t = (h - sqrt(discriminant)) * rcp(a);
+    // TODO: 应该控制在near跟far之间
+    if (result.t < 0)
+    {
+        return false;
+    }
+
+    result.position = EvaluateRayPosition(ray, result.t);
+    result.normal = normalize(result.position - sphere.xyz);
+    
+    if (dot(ray.directionWS, result.normal) > 0)
+    {
+        result.normal = -result.normal;
+        result.face = FACETYPE_BACK;
+    }
+    else
+    {
+        result.face = FACETYPE_FRONT;
+        
+    }
+    
     return true;
 }
 

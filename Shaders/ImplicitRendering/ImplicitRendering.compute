@@ -3,7 +3,7 @@
 #include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/RayTracing/Ray.hlsl"
 #include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/RayTracing/Intersections.hlsl"
 #include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/ShaderVariables.hlsl"
-
+#include "Packages/com.chichi.render-pipelines.too-young/ShaderLibrary/RayTracing/RayTracingBxDF.hlsl"
 
 #pragma kernel ImplicitRendering
 #pragma kernel Clear
@@ -13,23 +13,34 @@ float4 _ClearColor;
 float4x4 _PixelCoordToViewDirWS;
 float _ImplicitRenderersCount;
 
-float3 RayCast(Ray ray)
+void RayCast(Ray ray, out float3 finalColor)
 {
-    for(int i = 0; i < _ImplicitRenderersCount; ++i)
+    const int k_MAX_BOUNCE = 16;
+    uint bounce = 0;
+    bool intersected = false;
+    
+    float a = 0.5 * (ray.directionWS.y + 1.0);
+    finalColor = float3((1.0 - a) * float3(1.0, 1.0, 1.0) + a * pow(float3(0.5, 0.7, 1.0), 2.2));
+    
+    do
     {
-        ImplicitRendererInfo renderInfo = _ImplicitRendererList[i];
-        if (renderInfo.primitive == IMPLICITPRIMITIVE_SPHERE)
+        for(int i = 0; i < _ImplicitRenderersCount; ++i)
         {
-            HitResult result;
-            if(IntersectSphere(ray, _ImplicitSphereList[renderInfo.instanceId], result))
+            ImplicitRendererInfo renderInfo = _ImplicitRendererList[i];
+            if (renderInfo.primitive == IMPLICITPRIMITIVE_SPHERE)
             {
-                return result.normalOutside * 0.5 + 0.5;
+                HitResult result;
+                if(IntersectSphere(ray, _ImplicitSphereList[renderInfo.instanceId], result))
+                {
+                    ray = SingleScattering(result, finalColor);
+                    intersected = true;
+                }
             }
         }
     }
-    return float3(0, 0, 0);
-    float a = 0.5 * (ray.directionWS.y + 1.0);
-    return float3((1.0 - a) * float3(1.0, 1.0, 1.0) + a * pow(float3(0.5, 0.7, 1.0), 2.2));
+    while (intersected && ++bounce < k_MAX_BOUNCE);
+
+    
 }
 
 
@@ -42,8 +53,9 @@ void ImplicitRendering (uint3 dispatchThreadId : SV_DispatchThreadID)
     Ray ray = (Ray)0;
     ray.originWS = _CameraWorldPosition.xyz;
     ray.directionWS = SafeNormalize(mul(_PixelCoordToViewDirWS, float4(pixelCenterCoord, 1, 1)).xyz);
-    
-    _Result[pixelCoord] = float4(RayCast(ray), 1.0);
+    float3 finalColor;
+    RayCast(ray, finalColor);
+    _Result[pixelCoord] = float4(finalColor, 1.0);
 }
 
 [numthreads(1,1,1)]

@@ -5,6 +5,12 @@
 #ifndef IMPLICITRENDERER_CS_HLSL
 #define IMPLICITRENDERER_CS_HLSL
 //
+// UnityEngine.Rendering.TooYoung.FaceType:  static fields
+//
+#define FACETYPE_FRONT (0)
+#define FACETYPE_BACK (1)
+
+//
 // UnityEngine.Rendering.TooYoung.ImplicitPrimitive:  static fields
 //
 #define IMPLICITPRIMITIVE_NONE (0)
