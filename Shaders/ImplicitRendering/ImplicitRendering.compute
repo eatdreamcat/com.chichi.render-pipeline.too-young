@@ -8,7 +8,7 @@
 #pragma kernel ImplicitRendering
 #pragma kernel Clear
 
-RWTexture2D<float4> _Result;
+RWTexture2D<float3> _Result;
 float4 _ClearColor;
 float4x4 _PixelCoordToViewDirWS;
 float _ImplicitRenderersCount;
@@ -20,7 +20,7 @@ void RayCast(Ray ray, out float3 finalColor)
     bool intersected = false;
     
     float a = 0.5 * (ray.directionWS.y + 1.0);
-    finalColor = float3((1.0 - a) * float3(1.0, 1.0, 1.0) + a * pow(float3(0.5, 0.7, 1.0), 2.2));
+    finalColor = float3((1.0 - a) * float3(1.0, 1.0, 1.0) + a * float3(0.5, 0.7, 1.0));
     
     do
     {
@@ -55,7 +55,7 @@ void ImplicitRendering (uint3 dispatchThreadId : SV_DispatchThreadID)
     ray.directionWS = SafeNormalize(mul(_PixelCoordToViewDirWS, float4(pixelCenterCoord, 1, 1)).xyz);
     float3 finalColor;
     RayCast(ray, finalColor);
-    _Result[pixelCoord] = float4(finalColor, 1.0);
+    _Result[pixelCoord] = finalColor;
 }
 
 [numthreads(1,1,1)]

@@ -1,8 +1,8 @@
 {
     "name": "com.chichi.render-pipelines.too-young",
-    "description": "RayTracingPass + FinalBlit: 目前暂时没有渲染任何东西，先跑通流程",
+    "description": "基础的CosineWeight采样",
     "author": "吃梦的猫",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "unity": "2023.3",
     "displayName": "Too Young RP",
     "dependencies": {
