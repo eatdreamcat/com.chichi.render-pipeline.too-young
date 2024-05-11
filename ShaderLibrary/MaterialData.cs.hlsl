@@ -4,6 +4,9 @@
 
 #ifndef MATERIALDATA_CS_HLSL
 #define MATERIALDATA_CS_HLSL
+
+
+
 // Generated from UnityEngine.Rendering.TooYoung.MaterialProperties
 // PackingRules = Exact
 struct MaterialProperties

@@ -1,5 +1,12 @@
 namespace UnityEngine.Rendering.TooYoung
 {
+    public enum MediumType
+    {
+        Air = 0,
+        
+    }
+
+    
     [GenerateHLSL(generateCBuffer = true)]
     public struct MaterialProperties
     {
@@ -20,5 +27,8 @@ namespace UnityEngine.Rendering.TooYoung
         public float meanFreePath;
 
         public float density;
+
+        public float refractiveIndex;
+        
     }
 }
